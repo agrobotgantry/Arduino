@@ -61,11 +61,63 @@ ros::Publisher US2_publisher("agrobot_drive/ultrasonic_2", &float32_msg);
 ros::Publisher US3_publisher("agrobot_drive/ultrasonic_3", &float32_msg);
 ros::Publisher US4_publisher("agrobot_drive/ultrasonic_4", &float32_msg);
 
+
+// Subscriber callback stepper motor 1. This is for testing the individual motor
+void motor_1_callback(const std_msgs::Int8 &message) {
+  // Control the motor
+  motor_control(1,message.data);
+}
+
+
+// Subscriber callback stepper motor 2. This is for testing the individual motor
+void motor_2_callback(const std_msgs::Int8 &message) {
+  // Control the motor
+  motor_control(2,message.data);
+}
+
+
+// Subscriber callback stepper motor 3. This is for testing the individual motor
+void motor_3_callback(const std_msgs::Int8 &message) {
+  // Control the motor
+  motor_control(3,message.data);
+}
+
+
+// Subscriber callback stepper motor 4. This is for testing the individual motor
+void motor_4_callback(const std_msgs::Int8 &message) {
+  // Control the motor
+  motor_control(4,message.data);
+}
+
+
+// Subscriber callback arduino command. This is the action the robot has to execute
+void arduino_command_callback(const std_msgs::Int8 &message) {
+  // Select the correct state the robot should execute
+  if(message.data == 0) {
+    // Stop the Agrobot Gantry
+    agrobot_stop();
+  } else if(message.data == 1) {
+    // Drive the Agrobot Gantry forward
+    agrobot_drive_forward();
+  } else if(message.data == 2) {
+    // Drive the Agrobot Gant;ry backward
+    agrobot_drive_backward();
+  } else if(message.data == 3) {
+    // Turn the Agrobot Gantry left
+    agrobot_turn_left();
+  } else if(message.data == 4) {
+    // Turn the Agrobot Gantry right
+    agrobot_turn_right();
+  }
+}
+
+
 // Create ROS subsribers
 ros::Subscriber<std_msgs::Int8> M1_subscriber("agrobot_drive/motor_1", &motor_1_callback);
 ros::Subscriber<std_msgs::Int8> M2_subscriber("agrobot_drive/motor_2", &motor_2_callback);
 ros::Subscriber<std_msgs::Int8> M3_subscriber("agrobot_drive/motor_3", &motor_3_callback);
 ros::Subscriber<std_msgs::Int8> M4_subscriber("agrobot_drive/motor_4", &motor_4_callback);
+ros::Subscriber<std_msgs::Int8> arduino_cmd_subscriber("agrobot_drive/arduino_command", &arduino_command_callback);
 
 
 void setup() {
@@ -82,6 +134,7 @@ void setup() {
   nh.subscribe(M2_subscriber);
   nh.subscribe(M3_subscriber);
   nh.subscribe(M4_subscriber);
+  nh.subscribe(arduino_cmd_subscriber);
 
   // Initialise ultrasonic sensor 1 (Front left)
   pinMode(US1_echoPin, INPUT);
@@ -243,36 +296,58 @@ float ultrasonic_sensor_distance(int triggerPin,int echoPin)
 }
 
 
+// Stop the Agrobot Gantry
+void agrobot_stop() {
+  // Turn all four motors off
+  motor_off(1);
+  motor_off(2);
+  motor_off(3);
+  motor_off(4);
+}
+
+
+// Drive the Agrobot Gantry forward
+void agrobot_drive_forward() {
+  // Turn the four motors on, all in the same direction
+  motor_on(1,1);
+  motor_on(2,1);
+  motor_on(3,1);
+  motor_on(4,1);
+}
+
+
+// Drive the Agrobot Gantry backward
+void agrobot_drive_backward() {
+  // Turn the four motors on, all in the same direction
+  motor_on(1,0);
+  motor_on(2,0);
+  motor_on(3,0);
+  motor_on(4,0);
+}
+
+
+// Turn the Agrobot Gantry to the left
+void agrobot_turn_left() {
+  // Turn the right motors on in the positive direction and the left motors in the negative direction
+  motor_on(1,0);
+  motor_on(2,1);
+  motor_on(3,1);
+  motor_on(4,0);
+}
+
+
+// Turn the Agrobot Gantry to the right
+void agrobot_turn_right() {
+  // Turn the left motors on in the positive direction and the right motors in the positive direction
+  motor_on(1,1);
+  motor_on(2,0);
+  motor_on(3,0);
+  motor_on(4,1);
+}
+
+
 // Funtion to publish the value of a ultrasonic sensor to ROS
 void publish_ultrasonic_sensor(ros::Publisher publisher, float distance) {
   float32_msg.data = distance;
   publisher.publish(&float32_msg);
-}
-
-
-// Subscriber callback stepper motor 1
-void motor_1_callback(const std_msgs::Int8 &message) {
-  // Control the motor
-  motor_control(1,message.data);
-}
-
-
-// Subscriber callback stepper motor 2
-void motor_2_callback(const std_msgs::Int8 &message) {
-  // Control the motor
-  motor_control(2,message.data);
-}
-
-
-// Subscriber callback stepper motor 3
-void motor_3_callback(const std_msgs::Int8 &message) {
-  // Control the motor
-  motor_control(3,message.data);
-}
-
-
-// Subscriber callback stepper motor 4
-void motor_4_callback(const std_msgs::Int8 &message) {
-  // Control the motor
-  motor_control(4,message.data);
 }
