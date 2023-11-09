@@ -11,6 +11,7 @@
 // Include ROS serial to the code
 #include <ros.h>
 #include <std_msgs/Int8.h>
+#include <std_msgs/Bool.h>
 
 // Motor pins explanation:
 // Puls pin: Each puls will rotate the motor by one step.
@@ -54,10 +55,12 @@ int motor_1_speed = 0;
 int motor_2_speed = 0;
 int motor_3_speed = 0;
 int motor_4_speed = 0;
+bool object_detected = false;
 
 // Create ROS node handle and include messages
 ros::NodeHandle nh;
 std_msgs::Int8 int8_msg;
+std_msgs::Bool bool_msg;
 
 
 // Subscriber callback stepper motor 1. This is for testing the individual motor
@@ -88,6 +91,12 @@ void motor_4_callback(const std_msgs::Int8 &message) {
 }
 
 
+// Subscriber callback object detected
+void object_detected_callback(const std_msgs::Bool &message) {
+  object_detected = message.data;
+}
+
+
 // Subscriber callback arduino command. This is the action the robot has to execute
 void arduino_command_callback(const std_msgs::Int8 &message) {
   // Select the correct state the robot should execute
@@ -115,6 +124,7 @@ ros::Subscriber<std_msgs::Int8> M1_subscriber("agrobot_drive/motor_1", &motor_1_
 ros::Subscriber<std_msgs::Int8> M2_subscriber("agrobot_drive/motor_2", &motor_2_callback);
 ros::Subscriber<std_msgs::Int8> M3_subscriber("agrobot_drive/motor_3", &motor_3_callback);
 ros::Subscriber<std_msgs::Int8> M4_subscriber("agrobot_drive/motor_4", &motor_4_callback);
+ros::Subscriber<std_msgs::Int8> object_detected_subscriber("agrobot_object_detection/object_detected", &object_detected_callback);
 ros::Subscriber<std_msgs::Int8> arduino_cmd_subscriber("agrobot_drive/arduino_command", &arduino_command_callback);
 
 
@@ -128,6 +138,7 @@ void setup() {
   nh.subscribe(M2_subscriber);
   nh.subscribe(M3_subscriber);
   nh.subscribe(M4_subscriber);
+  nh.subscribe(object_detected_subscriber);
   nh.subscribe(arduino_cmd_subscriber);
 
   // Set parameters stepper motors
@@ -141,6 +152,10 @@ void setup() {
 void loop() {
   // Run the motors
   run_motors();
+
+  //
+  // Add if statement to check if object_detected is false before running the motors
+  //
 
   nh.spinOnce();
 }
