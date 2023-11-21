@@ -59,22 +59,12 @@ std_msgs::Int8 int8_msg;
 
 // Subscriber callback arduino command. This is the action the robot has to execute
 void arduino_command_callback(const std_msgs::Int8 &message) {
-  // Select the correct state the robot should execute
-  if(message.data == 0) {
-    current_state = 0;
-  } else if(message.data == 1) {
-    current_state = 1;
-  } else if(message.data == 2) {
-    current_state = 2;
-  } else if(message.data == 3) {
-    current_state = 3;
-  }
+  current_state = message.data;
 }
 
 // Create ROS subsriber and publisher
 ros::Subscriber<std_msgs::Int8> arduino_cmd_subscriber("agrobot_steering/arduino_command", &arduino_command_callback);
 ros::Publisher arduino_state_publisher("agrobot_steering/arduino_state", &int8_msg);
-
 
 void setup() {
   // Set baudraute for serial
@@ -92,11 +82,10 @@ void setup() {
   pinMode(S4_Pin, INPUT);
 }
 
-
 void loop() {
   // Control the motors
   if(current_state == 0) {
-    // Idle
+    // Idle - Wait for a command from ROS
     publish_state(arduino_state_publisher, 0);
   } else if(current_state == 1) {
     // Initialise the Agrobot Gantry
@@ -117,7 +106,6 @@ void loop() {
   
   nh.spinOnce();
 }
-
 
 // Initialise the wheels
 void initialise_wheels() {
@@ -155,7 +143,6 @@ void initialise_wheels() {
   motor_4.setCurrentPosition(motor_4.currentPosition());
 }
 
-
 // Turn the wheels to the straight position
 void turn_wheels_straight() {
   bool motor_1_state = false;
@@ -172,7 +159,6 @@ void turn_wheels_straight() {
   }
 }
 
-
 // Turn the wheels to the turn position
 void turn_wheels_turn() {
   bool motor_1_state = false;
@@ -188,7 +174,6 @@ void turn_wheels_turn() {
     motor_4_state = turn_one_wheel(motor_4, S4_Pin, 0);
   }
 }
-
 
 // Turn one wheel to the correct position
 bool turn_one_wheel(AccelStepper motor, int IR_sensor, bool motor_direction) {
@@ -214,7 +199,6 @@ bool turn_one_wheel(AccelStepper motor, int IR_sensor, bool motor_direction) {
 
   return state;
 }
-
 
 // Funtion to publish the state value to the Arduino
 void publish_state(ros::Publisher publisher, int state) {

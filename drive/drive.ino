@@ -44,79 +44,20 @@ AccelStepper motor_3(1,M3_pulsPin,M3_dirPin);
 AccelStepper motor_4(1,M4_pulsPin,M4_dirPin);
 
 // Initialise global variables for controlling the motor
-// NOTE: a motor only runs when the runSpeed() function is called. Because of that, variables are used to indicate if a motor should be runnning or not
 const int motor_default_speed = 200;
-bool motor_1_active = false;
-bool motor_2_active = false;
-bool motor_3_active = false;
-bool motor_4_active = false;
-int motor_1_speed = 0;
-int motor_2_speed = 0;
-int motor_3_speed = 0;
-int motor_4_speed = 0;
+int current_state = 0;
 
 // Create ROS node handle and include messages
 ros::NodeHandle nh;
 std_msgs::Int8 int8_msg;
 
-
-// Subscriber callback stepper motor 1. This is for testing the individual motor
-void motor_1_callback(const std_msgs::Int8 &message) {
-  // Control the motor
-  motor_control(1,message.data);
-}
-
-
-// Subscriber callback stepper motor 2. This is for testing the individual motor
-void motor_2_callback(const std_msgs::Int8 &message) {
-  // Control the motor
-  motor_control(2,message.data);
-}
-
-
-// Subscriber callback stepper motor 3. This is for testing the individual motor
-void motor_3_callback(const std_msgs::Int8 &message) {
-  // Control the motor
-  motor_control(3,message.data);
-}
-
-
-// Subscriber callback stepper motor 4. This is for testing the individual motor
-void motor_4_callback(const std_msgs::Int8 &message) {
-  // Control the motor
-  motor_control(4,message.data);
-}
-
-
 // Subscriber callback arduino command. This is the action the robot has to execute
 void arduino_command_callback(const std_msgs::Int8 &message) {
-  // Select the correct state the robot should execute
-  if(message.data == 0) {
-    // Stop the Agrobot Gantry
-    agrobot_stop();
-  } else if(message.data == 1) {
-    // Drive the Agrobot Gantry forward
-    agrobot_drive_forward();
-  } else if(message.data == 2) {
-    // Drive the Agrobot Gant;ry backward
-    agrobot_drive_backward();
-  } else if(message.data == 3) {
-    // Turn the Agrobot Gantry left
-    agrobot_turn_left();
-  } else if(message.data == 4) {
-    // Turn the Agrobot Gantry right
-    agrobot_turn_right();
-  }
+  current_state = message.data;
 }
 
-
-// Create ROS subsribers
-ros::Subscriber<std_msgs::Int8> M1_subscriber("agrobot_drive/motor_1", &motor_1_callback);
-ros::Subscriber<std_msgs::Int8> M2_subscriber("agrobot_drive/motor_2", &motor_2_callback);
-ros::Subscriber<std_msgs::Int8> M3_subscriber("agrobot_drive/motor_3", &motor_3_callback);
-ros::Subscriber<std_msgs::Int8> M4_subscriber("agrobot_drive/motor_4", &motor_4_callback);
+// Create ROS subsriber
 ros::Subscriber<std_msgs::Int8> arduino_cmd_subscriber("agrobot_drive/arduino_command", &arduino_command_callback);
-
 
 void setup() {
   // Set baudraute for serial
@@ -137,162 +78,77 @@ void setup() {
   motor_4.setMaxSpeed(1000);
 }
 
-
 void loop() {
-  // Run the motors
-  run_motors();
+  // State 0 is the idle state where the motors are turned off and the Arduino waits for a ROS command
+  if(current_state == 1) {
+    // Drive the Agrobot Gantry forward
+    agrobot_drive_forward();
+  } else if(current_state == 2) {
+    // Drive the Agrobot Gant;ry backward
+    agrobot_drive_backward();
+  } else if(current_state == 3) {
+    // Turn the Agrobot Gantry left
+    agrobot_turn_left();
+  } else if(current_state == 4) {
+    // Turn the Agrobot Gantry right
+    agrobot_turn_right();
+  }
+  
   nh.spinOnce();
 }
-
-
-// Function to turn the stepper motor on. The direction should be positive (HIGH = 1) or negative (LOW = 0)
-void motor_on(int motor_number, int motor_direction){
-  // Select the correct motor to turn on
-  if(motor_number == 1 && motor_direction == 0) {
-    // Motor front left - turn in negative direction
-    motor_1_active = true;
-    motor_1_speed = -motor_default_speed;
-  } else if(motor_number == 1 && motor_direction == 1) {
-    // Motor front left - turn in positive direction
-    motor_1_active = true;
-    motor_1_speed = motor_default_speed;
-  } else if(motor_number == 2 && motor_direction == 0) {
-    // Motor front right - turn in negative direction
-    motor_2_active = true;
-    motor_2_speed = -motor_default_speed;
-  } else if(motor_number == 2 && motor_direction == 1) {
-    // Motor front right - turn in positive direction
-    motor_2_active = true;
-    motor_2_speed = motor_default_speed;
-  } else if (motor_number == 3 && motor_direction == 0) {
-    // Motor back right - turn in negative direction
-    motor_3_active = true;
-    motor_3_speed = -motor_default_speed;
-  } else if (motor_number == 3 && motor_direction == 1) {
-    // Motor back right - turn in positive direction
-    motor_3_active = true;
-    motor_3_speed = motor_default_speed;
-  } else if(motor_number == 4 && motor_direction == 0) {
-    // Motor back left - turn in negative direction
-    motor_4_active = true;
-    motor_4_speed = -motor_default_speed;
-  } else if(motor_number == 4 && motor_direction == 1) {
-    // Motor back left - turn in positive direction
-    motor_4_active = true;
-    motor_4_speed = motor_default_speed;
-  }
-}
-
-
-// Function to turn the stepper motor off
-void motor_off(int motor_number){
-  // Select the correct motor to turn off
-  if(motor_number == 1) {
-    // Motor front left
-    motor_1_active = false;
-    motor_1_speed = 0;
-  } else if(motor_number == 2) {
-    // Motor front right
-    motor_2_active = false;
-    motor_2_speed = 0;
-  } else if(motor_number == 3) {
-    // Motor back right
-    motor_3_active = false;
-    motor_3_speed = 0;
-  } else if(motor_number == 4) {
-    // Motor back left
-    motor_4_active = false;
-    motor_4_speed = 0;
-  }
-}
-
-
-// Function to control the motor after a callback from the subscriber
-void motor_control(int motor_number, int motor_state) {
-  // Select the correct action for the stepper motor
-  if(motor_state == 0) {
-    // Turn motor off
-    motor_off(motor_number);
-  } else if(motor_state == 1) {
-    // Turn motor on in positive direction
-    motor_on(motor_number,1);
-  } else if(motor_state == 2) {
-    // Turn motor on in negative direction
-    motor_on(motor_number,0);
-  }
-}
-
-
-// Run the motors
-void run_motors() {
-  // Run motor 1
-  if (motor_1_active == true) {
-    motor_1.setSpeed(motor_1_speed);
-    motor_1.runSpeed();
-  }
-  // Run motor 2
-  if (motor_2_active == true) {
-    motor_2.setSpeed(motor_2_speed);
-    motor_2.runSpeed();
-  }
-  // Run motor 3
-  if (motor_3_active == true) {
-    motor_3.setSpeed(motor_3_speed);
-    motor_3.runSpeed();
-  }
-  // Run motor 4
-  if (motor_4_active == true) {
-    motor_4.setSpeed(motor_4_speed);
-    motor_4.runSpeed();
-  }
-}
-
-
-// Stop the Agrobot Gantry
-void agrobot_stop() {
-  // Turn all four motors off
-  motor_off(1);
-  motor_off(2);
-  motor_off(3);
-  motor_off(4);
-}
-
 
 // Drive the Agrobot Gantry forward
 void agrobot_drive_forward() {
   // Turn the four motors on, all in the same direction
-  motor_on(1,1);
-  motor_on(2,1);
-  motor_on(3,1);
-  motor_on(4,1);
-}
+  motor_1.setSpeed(motor_default_speed);
+  motor_2.setSpeed(motor_default_speed);
+  motor_3.setSpeed(motor_default_speed);
+  motor_4.setSpeed(motor_default_speed);
 
+  motor_1.runSpeed();
+  motor_2.runSpeed();
+  motor_3.runSpeed();
+  motor_4.runSpeed();
+}
 
 // Drive the Agrobot Gantry backward
 void agrobot_drive_backward() {
   // Turn the four motors on, all in the same direction
-  motor_on(1,0);
-  motor_on(2,0);
-  motor_on(3,0);
-  motor_on(4,0);
-}
+  motor_1.setSpeed(-motor_default_speed);
+  motor_2.setSpeed(-motor_default_speed);
+  motor_3.setSpeed(-motor_default_speed);
+  motor_4.setSpeed(-motor_default_speed);
 
+  motor_1.runSpeed();
+  motor_2.runSpeed();
+  motor_3.runSpeed();
+  motor_4.runSpeed();
+}
 
 // Turn the Agrobot Gantry to the left
 void agrobot_turn_left() {
   // Turn the right motors on in the positive direction and the left motors in the negative direction
-  motor_on(1,0);
-  motor_on(2,1);
-  motor_on(3,1);
-  motor_on(4,0);
-}
+  motor_1.setSpeed(-motor_default_speed);
+  motor_2.setSpeed(motor_default_speed);
+  motor_3.setSpeed(motor_default_speed);
+  motor_4.setSpeed(-motor_default_speed);
 
+  motor_1.runSpeed();
+  motor_2.runSpeed();
+  motor_3.runSpeed();
+  motor_4.runSpeed();
+}
 
 // Turn the Agrobot Gantry to the right
 void agrobot_turn_right() {
   // Turn the left motors on in the positive direction and the right motors in the positive direction
-  motor_on(1,1);
-  motor_on(2,0);
-  motor_on(3,0);
-  motor_on(4,1);
+  motor_1.setSpeed(motor_default_speed);
+  motor_2.setSpeed(-motor_default_speed);
+  motor_3.setSpeed(-motor_default_speed);
+  motor_4.setSpeed(motor_default_speed);
+
+  motor_1.runSpeed();
+  motor_2.runSpeed();
+  motor_3.runSpeed();
+  motor_4.runSpeed();
 }
