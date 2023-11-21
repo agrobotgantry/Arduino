@@ -50,227 +50,174 @@ AccelStepper motor_3(1,M3_pulsPin,M3_dirPin);
 AccelStepper motor_4(1,M4_pulsPin,M4_dirPin);
 
 // Initialise global variables for controlling the motor
-// NOTE: a motor only runs when the runSpeed() function is called. Because of that, variables are used to indicate if a motor should be runnning or not
 const int motor_default_speed = 50;
-bool motor_1_active = false;
-bool motor_2_active = false;
-bool motor_3_active = false;
-bool motor_4_active = false;
-int motor_1_speed = 0;
-int motor_2_speed = 0;
-int motor_3_speed = 0;
-int motor_4_speed = 0;
+int current_state = 0;
 
 // Create ROS node handle and include messages
 ros::NodeHandle nh;
 std_msgs::Int8 int8_msg;
 
-
-// Subscriber callback stepper motor 1. This is for testing the individual motor
-void motor_1_callback(const std_msgs::Int8 &message) {
-  // Control the motor
-  motor_control(1,message.data);
-}
-
-
-// Subscriber callback stepper motor 2. This is for testing the individual motor
-void motor_2_callback(const std_msgs::Int8 &message) {
-  // Control the motor
-  motor_control(2,message.data);
-}
-
-
-// Subscriber callback stepper motor 3. This is for testing the individual motor
-void motor_3_callback(const std_msgs::Int8 &message) {
-  // Control the motor
-  motor_control(3,message.data);
-}
-
-
-// Subscriber callback stepper motor 4. This is for testing the individual motor
-void motor_4_callback(const std_msgs::Int8 &message) {
-  // Control the motor
-  motor_control(4,message.data);
-}
-
 // Subscriber callback arduino command. This is the action the robot has to execute
 void arduino_command_callback(const std_msgs::Int8 &message) {
   // Select the correct state the robot should execute
   if(message.data == 0) {
-    // Initialise the Agrobot Gantry
-    initialise_wheels();
+    current_state = 0;
   } else if(message.data == 1) {
-    // Turn wheels to straight position
-    turn_wheels_straight();
+    current_state = 1;
   } else if(message.data == 2) {
-    // Turn the wheels to the turn position
-    turn_wheels_turn();
+    current_state = 2;
+  } else if(message.data == 3) {
+    current_state = 3;
   }
 }
 
-// Create ROS subsribers
-ros::Subscriber<std_msgs::Int8> M1_subscriber("agrobot_steering/motor_1", &motor_1_callback);
-ros::Subscriber<std_msgs::Int8> M2_subscriber("agrobot_steering/motor_2", &motor_2_callback);
-ros::Subscriber<std_msgs::Int8> M3_subscriber("agrobot_steering/motor_3", &motor_3_callback);
-ros::Subscriber<std_msgs::Int8> M4_subscriber("agrobot_steering/motor_4", &motor_4_callback);
+// Create ROS subsriber and publisher
 ros::Subscriber<std_msgs::Int8> arduino_cmd_subscriber("agrobot_steering/arduino_command", &arduino_command_callback);
+ros::Publisher arduino_state_publisher("agrobot_steering/arduino_state", &int8_msg);
 
 
 void setup() {
   // Set baudraute for serial
   Serial.begin(57600);
 
-  // Initialise ROS node and subscribe to topics
+  // Initialise ROS node, subscribe and initialise publisher to topics
   nh.initNode();
-  nh.subscribe(M1_subscriber);
-  nh.subscribe(M2_subscriber);
-  nh.subscribe(M3_subscriber);
-  nh.subscribe(M4_subscriber);
   nh.subscribe(arduino_cmd_subscriber);
+  nh.advertise(arduino_state_publisher);
 
   // Initialise IR sensors
   pinMode(S1_Pin, INPUT);
   pinMode(S2_Pin, INPUT);
   pinMode(S3_Pin, INPUT);
   pinMode(S4_Pin, INPUT);
-
-  // Set parameters stepper motors
-  motor_1.setMaxSpeed(1000);
-  motor_2.setMaxSpeed(1000);
-  motor_3.setMaxSpeed(1000);
-  motor_4.setMaxSpeed(1000);
 }
 
 
 void loop() {
-  // Run the motors
-  run_motors();
+  // Control the motors
+  if(current_state == 0) {
+    // Idle
+    publish_state(arduino_state_publisher, 0);
+  } else if(current_state == 1) {
+    // Initialise the Agrobot Gantry
+    publish_state(arduino_state_publisher, 1);
+    initialise_wheels();
+    current_state = 0;
+  } else if(current_state == 2) {
+    // Turn wheels to straight position
+    publish_state(arduino_state_publisher, 2);
+    turn_wheels_straight();
+    current_state = 0;
+  } else if(current_state == 3) {
+    publish_state(arduino_state_publisher, 3);
+    // Turn the wheels to the turn position
+    turn_wheels_turn();
+    current_state = 0;
+  }
+  
   nh.spinOnce();
-}
-
-
-// Function to turn the stepper motor on. The direction should be positive (HIGH = 1) or negative (LOW = 0)
-void motor_on(int motor_number, int motor_direction){
-  // Select the correct motor to turn on
-  if(motor_number == 1 && motor_direction == 0) {
-    // Motor front left - turn in negative direction
-    motor_1_active = true;
-    motor_1_speed = -motor_default_speed;
-  } else if(motor_number == 1 && motor_direction == 1) {
-    // Motor front left - turn in positive direction
-    motor_1_active = true;
-    motor_1_speed = motor_default_speed;
-  } else if(motor_number == 2 && motor_direction == 0) {
-    // Motor front right - turn in negative direction
-    motor_2_active = true;
-    motor_2_speed = -motor_default_speed;
-  } else if(motor_number == 2 && motor_direction == 1) {
-    // Motor front right - turn in positive direction
-    motor_2_active = true;
-    motor_2_speed = motor_default_speed;
-  } else if (motor_number == 3 && motor_direction == 0) {
-    // Motor back right - turn in negative direction
-    motor_3_active = true;
-    motor_3_speed = -motor_default_speed;
-  } else if (motor_number == 3 && motor_direction == 1) {
-    // Motor back right - turn in positive direction
-    motor_3_active = true;
-    motor_3_speed = motor_default_speed;
-  } else if(motor_number == 4 && motor_direction == 0) {
-    // Motor back left - turn in negative direction
-    motor_4_active = true;
-    motor_4_speed = -motor_default_speed;
-  } else if(motor_number == 4 && motor_direction == 1) {
-    // Motor back left - turn in positive direction
-    motor_4_active = true;
-    motor_4_speed = motor_default_speed;
-  }
-}
-
-
-// Function to turn the stepper motor off
-void motor_off(int motor_number){
-  // Select the correct motor to turn off
-  if(motor_number == 1) {
-    // Motor front left
-    motor_1_active = false;
-    motor_1_speed = 0;
-  } else if(motor_number == 2) {
-    // Motor front right
-    motor_2_active = false;
-    motor_2_speed = 0;
-  } else if(motor_number == 3) {
-    // Motor back right
-    motor_3_active = false;
-    motor_3_speed = 0;
-  } else if(motor_number == 4) {
-    // Motor back left
-    motor_4_active = false;
-    motor_4_speed = 0;
-  }
-}
-
-
-// Function to control the motor after a callback from the subscriber
-void motor_control(int motor_number, int motor_state) {
-  // Select the correct action for the stepper motor
-  if(motor_state == 0) {
-    // Turn motor off
-    motor_off(motor_number);
-  } else if(motor_state == 1) {
-    // Turn motor on in positive direction
-    motor_on(motor_number,1);
-  } else if(motor_state == 2) {
-    // Turn motor on in negative direction
-    motor_on(motor_number,0);
-  }
-}
-
-
-// Run the motors
-void run_motors() {
-  // Run motor 1
-  if (motor_1_active == true) {
-    motor_1.setSpeed(motor_1_speed);
-    motor_1.runSpeed();
-  }
-  // Run motor 2
-  if (motor_2_active == true) {
-    motor_2.setSpeed(motor_2_speed);
-    motor_2.runSpeed();
-  }
-  // Run motor 3
-  if (motor_3_active == true) {
-    motor_3.setSpeed(motor_3_speed);
-    motor_3.runSpeed();
-  }
-  // Run motor 4
-  if (motor_4_active == true) {
-    motor_4.setSpeed(motor_4_speed);
-    motor_4.runSpeed();
-  }
 }
 
 
 // Initialise the wheels
 void initialise_wheels() {
-  //
-  //
-  //
+  bool motor_1_state = false;
+  bool motor_2_state = false;
+  bool motor_3_state = false;
+  bool motor_4_state = false;
+
+  // Turn the four wheels to the turn position
+  while(not motor_1_state and not motor_2_state and not motor_3_state and not motor_4_state) {
+    motor_1_state = turn_one_wheel(motor_1, S1_Pin, 1);
+    motor_2_state = turn_one_wheel(motor_2, S2_Pin, 0);
+    motor_3_state = turn_one_wheel(motor_3, S3_Pin, 1);
+    motor_4_state = turn_one_wheel(motor_4, S4_Pin, 0);
+  }
+
+  // Reset states to false
+  motor_1_state = false;
+  motor_2_state = false;
+  motor_3_state = false;
+  motor_4_state = false;
+
+  // Turn the four wheels back to the straight position
+  while(not motor_1_state and not motor_2_state and not motor_3_state and not motor_4_state) {
+    motor_1_state = turn_one_wheel(motor_1, S1_Pin, 0);
+    motor_2_state = turn_one_wheel(motor_2, S2_Pin, 1);
+    motor_3_state = turn_one_wheel(motor_3, S3_Pin, 0);
+    motor_4_state = turn_one_wheel(motor_4, S4_Pin, 1);
+  }
+
+  // Set the current position as the 0 position
+  motor_1.setCurrentPosition(motor_1.currentPosition());
+  motor_2.setCurrentPosition(motor_2.currentPosition());
+  motor_3.setCurrentPosition(motor_3.currentPosition());
+  motor_4.setCurrentPosition(motor_4.currentPosition());
 }
 
 
 // Turn the wheels to the straight position
 void turn_wheels_straight() {
-  //
-  //
-  //
+  bool motor_1_state = false;
+  bool motor_2_state = false;
+  bool motor_3_state = false;
+  bool motor_4_state = false;
+
+  // Turn the four wheels to the correct position
+  while(not motor_1_state and not motor_2_state and not motor_3_state and not motor_4_state) {
+    motor_1_state = turn_one_wheel(motor_1, S1_Pin, 0);
+    motor_2_state = turn_one_wheel(motor_2, S2_Pin, 1);
+    motor_3_state = turn_one_wheel(motor_3, S3_Pin, 0);
+    motor_4_state = turn_one_wheel(motor_4, S4_Pin, 1);
+  }
 }
 
 
 // Turn the wheels to the turn position
 void turn_wheels_turn() {
-  //
-  //
-  //
+  bool motor_1_state = false;
+  bool motor_2_state = false;
+  bool motor_3_state = false;
+  bool motor_4_state = false;
+
+  // Turn the four wheels to the correct position
+  while(not motor_1_state and not motor_2_state and not motor_3_state and not motor_4_state) {
+    motor_1_state = turn_one_wheel(motor_1, S1_Pin, 1);
+    motor_2_state = turn_one_wheel(motor_2, S2_Pin, 0);
+    motor_3_state = turn_one_wheel(motor_3, S3_Pin, 1);
+    motor_4_state = turn_one_wheel(motor_4, S4_Pin, 0);
+  }
+}
+
+
+// Turn one wheel to the correct position
+bool turn_one_wheel(AccelStepper motor, int IR_sensor, bool motor_direction) {
+  int motor_speed = motor_default_speed;
+  bool state = false;
+  
+  // Set the speed of the motor according to the direction
+  if(not motor_direction) {
+    motor_speed = -motor_default_speed;
+  }
+
+  // Turn the wheel
+  if(motor.currentPosition() > -5 and motor_1.currentPosition() < 5) {
+    // Ignore the IR sensor in the first few steps
+    motor.runSpeed();
+  } else if(not digitalRead(IR_sensor)) {
+    // Run the motor untill the sensor sends a signal the position is reached
+    motor.runSpeed();
+  } else {
+    // Position is reached
+    state = true;
+  }
+
+  return state;
+}
+
+
+// Funtion to publish the state value to the Arduino
+void publish_state(ros::Publisher publisher, int state) {
+  int8_msg.data = state;
+  publisher.publish(&int8_msg);
 }
