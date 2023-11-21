@@ -65,10 +65,6 @@ void setup() {
 
   // Initialise ROS node and subscribe to topics
   nh.initNode();
-  nh.subscribe(M1_subscriber);
-  nh.subscribe(M2_subscriber);
-  nh.subscribe(M3_subscriber);
-  nh.subscribe(M4_subscriber);
   nh.subscribe(arduino_cmd_subscriber);
 
   // Set parameters stepper motors

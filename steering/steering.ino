@@ -176,7 +176,7 @@ void turn_wheels_turn() {
 }
 
 // Turn one wheel to the correct position
-bool turn_one_wheel(AccelStepper motor, int IR_sensor, bool motor_direction) {
+bool turn_one_wheel(AccelStepper &motor, int IR_sensor, bool motor_direction) {
   int motor_speed = motor_default_speed;
   bool state = false;
   
