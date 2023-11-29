@@ -11,7 +11,8 @@
 
 // Include ROS serial to the code
 #include <ros.h>
-#include <std_msgs/Bool.h>
+#include <std_msgs/Empty.h>
+#include <geometry_msgs/Point.h>
 
 // Motor pins explanation:
 // Puls pin: Each puls will rotate the motor by one step.
@@ -60,20 +61,38 @@ Servo servo_gripper;
 
 // Create ROS node handle and include messages
 ros::NodeHandle nh;
-std_msgs::Bool bool_msg;
+std_msgs::Empty empty_msg;
+geometry_msgs::Point point_msg;
 
-// Subscriber callback gripper
-void gripper_callback(const std_msgs::Bool &message) {
-  // Open or close gripper
-  if(message.data == false) {
-    gripper_open();
-  } else if(message.data == true) {
-    gripper_close();
-  }
+// Initialise the gantry
+void arduino_initialise_callback() {
+  initialise_x_axis()
+  initialise_y_axis()
+  initialise_z_axis()
+  gripper_open();
+
+  // Set current positions of motors as zero
+  motor_x.setCurrentPosition();
+  motor_y.setCurrentPosition();
+  motor_z.setCurrentPosition();
 }
 
-// Create ROS subsriber
-ros::Subscriber<std_msgs::Bool> gripper_subscriber("agrobot_gantry/gripper", &gripper_callback);
+// Subscriber callback coordinates
+void arduino_coordinates_callback(const geometry_msgs::Point &message) {
+  float position_x = message.x;
+  float position_y = message.y;
+  float position_z = message.z;
+
+  //
+  //
+  // Plaats hier de code die de gantry moet uitvoeren nadat de coordinaten zijn ontvangen
+  //
+  //
+}
+
+// Create ROS subsribers
+ros::Subscriber<std_msgs::Empty> initialise_subscriber("agrobot_gantry/initialise", &arduino_initialise_callback);
+ros::Subscriber<geometry_msgs::Point> coordinates_subscriber("agrobot_gantry/coordinates", &arduino_coordinates_callback);
 
 void setup() {
   // Set baudraute for serial
@@ -101,12 +120,10 @@ void setup() {
   motor_y.setAcceleration(500);
   motor_z.setAcceleration(500);
 
-  // Initialise the gantry
-  initialise();
-
   // Initialise ROS node and subscribe to topics
   nh.initNode();
-  nh.subscribe(gripper_subscriber);
+  nh.subscribe(initialise_subscriber);
+  nh.subscribe(coordinates_subscriber);
 }
 
 void loop() {
@@ -115,19 +132,6 @@ void loop() {
   //
 
   nh.spinOnce();
-}
-
-// Initialise the gantry
-void initialise() {
-  //initialise_x_axis()
-  //initialise_y_axis()
-  initialise_z_axis()
-  gripper_open();
-
-  // Set current positions of motors as zero
-  motor_x.setCurrentPosition();
-  motor_y.setCurrentPosition();
-  motor_z.setCurrentPosition();
 }
 
 // Initialise the x-axis
