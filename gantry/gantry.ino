@@ -82,6 +82,25 @@ void setup() {
   // Initialise servo gripper
   servo_gripper.attach(servo_gripperPin);
 
+  // Initialise normal and reed switches
+  pinMode(Switch_X1_NC, INPUT);
+  pinMode(Switch_X1_NO, INPUT);
+  pinMode(Switch_X2_NC, INPUT);
+  pinMode(Switch_X2_NO, INPUT);
+  
+  pinMode(Reed_Y1, INPUT);
+  pinMode(Reed_Y2, INPUT);
+  pinMode(Reed_Z1, INPUT);
+  pinMode(Reed_Z2, INPUT);
+
+  // Set parameters for motors
+  /*motor_x.setSpeed(1000);
+  motor_y.setSpeed(1000);
+  motor_z.setSpeed(1000);*/
+  motor_x.setAcceleration(500);
+  motor_y.setAcceleration(500);
+  motor_z.setAcceleration(500);
+
   // Initialise the gantry
   initialise();
 
@@ -100,20 +119,62 @@ void loop() {
 
 // Initialise the gantry
 void initialise() {
-  // Open the gripper
+  //initialise_x_axis()
+  //initialise_y_axis()
+  initialise_z_axis()
   gripper_open();
 
+  // Set current positions of motors as zero
+  motor_x.setCurrentPosition();
+  motor_y.setCurrentPosition();
+  motor_z.setCurrentPosition();
+}
+
+// Initialise the x-axis
+void initialise_x_axis() {
   //
-  // Add code for initialising the gantry
   //
+  //
+}
+
+// Initialise the y-axis
+void initialise_y_axis() {
+  //
+  //
+  //
+}
+
+// Initialise the z-axis
+void initialise_z_axis() {
+  // Move the axis up as long as the reed switch is not triggered
+  if(digitalRead(Reed_Z1) == HIGH) {
+    motor_z.setSpeed(200);
+    motor_z.runSpeed();
+  }
+}
+
+// Move the z-axis to the up position
+void z_axis_up() {
+  // Check if reed switch is reached
+  if(digitalRead(Reed_Z1) == HIGH) {
+    motor_z.runToNewPosition(0);
+  }
+}
+
+// Move the z-axis to the down position
+void z_axis_down() {
+  // Check if reed switch is reached
+  if(digitalRead(Reed_Z2) == HIGH) {
+    motor_z.runToNewPosition(400);
+  }
 }
 
 // Open the gripper
 void gripper_open() {
-  servo_gripper.write(0);
+  servo_gripper.write(180);
 }
 
 // Close the gripper
 void gripper_close() {
-  servo_gripper.write(20);
+  servo_gripper.write(0);
 }
