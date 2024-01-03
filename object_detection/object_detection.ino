@@ -9,19 +9,19 @@
 #include <std_msgs/Float32.h>
 #include <std_msgs/Bool.h>
 
-// Pins ultrasonic sensor 1 (Front left)
+// Pins ultrasonic sensor 1 (Back left)
 const int US1_trigPin = 26;
 const int US1_echoPin = 27;
 
-// Pins ultrasonic sensor 2 (Front right)
+// Pins ultrasonic sensor 2 (Back right)
 const int US2_trigPin = 28;
-const int US2_echoPin = 29;
+const int US2_echoPin = 25; // 29
 
-// Pins ultrasonic sensor 3 (Back right)
+// Pins ultrasonic sensor 3 (Front left)
 const int US3_trigPin = 30;
 const int US3_echoPin = 31;
 
-// Pins ultrasonic sensor 4 (Back left)
+// Pins ultrasonic sensor 4 (Front right)
 const int US4_trigPin = 32;
 const int US4_echoPin = 33;
 
@@ -48,6 +48,7 @@ void setup() {
   nh.advertise(US2_publisher);
   nh.advertise(US3_publisher);
   nh.advertise(US4_publisher);
+  nh.advertise(object_detected_publisher);
 
   // Initialise ultrasonic sensor 1 (Front left)
   pinMode(US1_echoPin, INPUT);

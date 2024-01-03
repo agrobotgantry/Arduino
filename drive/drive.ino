@@ -67,19 +67,6 @@ void setup() {
   nh.initNode();
   nh.subscribe(arduino_cmd_subscriber);
 
-  //
-  //
-  //
-  /*
-  pinMode(M1_enPin, OUTPUT);
-  pinMode(M2_enPin, OUTPUT);
-  pinMode(M3_enPin, OUTPUT);
-  pinMode(M4_enPin, OUTPUT);
-  digitalWrite(M1_enPin, LOW);
-  digitalWrite(M2_enPin, LOW);
-  digitalWrite(M3_enPin, LOW);
-  digitalWrite(M4_enPin, LOW);*/
-
   // Set parameters stepper motors
   motor_1.setMaxSpeed(1500);
   motor_2.setMaxSpeed(1500);
@@ -88,7 +75,6 @@ void setup() {
 }
 
 void loop() {
-  /*
   // State 0 is the idle state where the motors are turned off and the Arduino waits for a ROS command
   if(current_state == 1) {
     // Drive the Agrobot Gantry forward
@@ -103,26 +89,6 @@ void loop() {
     // Turn the Agrobot Gantry righ
     agrobot_turn_right();
   }
-  */
-
-  // 
-  //
-  //
-  //agrobot_drive_forward();
-  //agrobot_drive_backward();
-  //agrobot_turn_right();
-
-  //motor_1.setSpeed(500);
-  //motor_1.runSpeed();
-
-  //motor_2.setSpeed(500);
-  //motor_2.runSpeed();
-
-  //motor_3.setSpeed(300);
-  //motor_3.runSpeed();
-
-  //motor_4.setSpeed(500);
-  //motor_4.runSpeed();
   
   nh.spinOnce();
 }
