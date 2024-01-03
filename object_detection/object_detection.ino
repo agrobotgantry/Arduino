@@ -10,20 +10,20 @@
 #include <std_msgs/Bool.h>
 
 // Pins ultrasonic sensor 1 (Front left)
-const int US1_trigPin = 30;
-const int US1_echoPin = 31;
+const int US1_trigPin = 26;
+const int US1_echoPin = 27;
 
 // Pins ultrasonic sensor 2 (Front right)
-const int US2_trigPin = 32;
-const int US2_echoPin = 33;
+const int US2_trigPin = 28;
+const int US2_echoPin = 29;
 
 // Pins ultrasonic sensor 3 (Back right)
-const int US3_trigPin = 34;
-const int US3_echoPin = 35;
+const int US3_trigPin = 30;
+const int US3_echoPin = 31;
 
 // Pins ultrasonic sensor 4 (Back left)
-const int US4_trigPin = 36;
-const int US4_echoPin = 37;
+const int US4_trigPin = 32;
+const int US4_echoPin = 33;
 
 // Create ROS node handle and include messages
 ros::NodeHandle nh;
