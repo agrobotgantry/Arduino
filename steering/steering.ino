@@ -136,8 +136,11 @@ void turn_wheels(bool M1_direction, bool M2_direction, bool M3_direction, bool M
 
   // Turn the four wheels to the correct position
   while(not motor_1_state or not motor_2_state or not motor_3_state or not motor_4_state) {
+    //
+    // LET_OP: Sensor motor 2 terugzetten!
+    //
     motor_1_state = turn_one_wheel(motor_1, S1_Pin, M1_direction, start_time, motor_default_speed);
-    motor_2_state = turn_one_wheel(motor_2, S2_Pin, M2_direction, start_time, motor_default_speed);
+    motor_2_state = turn_one_wheel(motor_2, S1_Pin, M2_direction, start_time, motor_default_speed);
     motor_3_state = turn_one_wheel(motor_3, S3_Pin, M3_direction, start_time, motor_default_speed * 2.5);
     motor_4_state = turn_one_wheel(motor_4, S4_Pin, M4_direction, start_time, motor_default_speed * 2.5);
   }
