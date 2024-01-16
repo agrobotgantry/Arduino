@@ -21,6 +21,7 @@ unsigned long waitTime = 0;
 int state = 0;
 int* ptr_state = &state;
 int* gewas_locatie;
+bool reset_once = false;
 
 // ====================================== SETUP ======================================
 
@@ -53,20 +54,31 @@ void loop() {
   //int y_afstand = -2200;
 
 
-  if (startingpoint){ // global in rossserial
+  if (startingpoint){ // global in rossserial     // zorgt wss voor een loop dus moet een extra check komen wanneer zeker dat een nieuwe coordinaat is gekomen?
     // if subscribe ros aanzetten van gantry
-    // zet state op 0;
+    // startingpoint: 1,2,3 correspondeert LINKS, MIDDEN, RECHTS
 
-    // reset ook id
-    *ptr_id = 0;
-    *ptr_state = 0;
+    // reset state & id;
+    if (reset_once == false){   // zorgt voor blok >> in ergens het weer unlocken!!!!!!!!!!!!!!!!!
+      reset_var_and_states();
+      reset_once = true;
+    }
+    
 
     // if subscribe LEFT, MIDDLE, RIGHT
     // ga naar locatie en start proces
+    bool at_gantry_at_location = gantry_start_plaats(startingpoint);
+    
+    if (at_gantry_at_location == true){
+      ptr_state = 1;
+    }
+    else {
+      ptr_state = 0;
+    }
   }
 
   // aanvraag gewas locatie
-  if (*ptr_state == 0){
+  if (*ptr_state == 1){
     static bool publish_message = false;
 
     if(!publish_message){
@@ -83,26 +95,26 @@ void loop() {
   }
 
   // naar gewas locatie gaan met gegeven coordinaten
-  else if (*ptr_state == 1){
+  else if (*ptr_state == 2){
     gewasPositie(position_x, position_y, ptr_state);
   }
 
   // gripper sluiten - gewas pakken
-  else if (*ptr_state == 2){
+  else if (*ptr_state == 3){
     gripper_close(ptr_state);
     waitTime = millis(); 
   }
 
   // wacht seconde voordat servo goed sluit
   // gewas brengen naar de camera voor herkenning
-  else if (*ptr_state == 3){
+  else if (*ptr_state == 4){
     if ((millis() - waitTime >= 1000)){
       gewas_naar_camera(ptr_state);    
     }
   }
 
   // aanvraag object detectie op Jetson
-  else if (*ptr_state == 4){
+  else if (*ptr_state == 5){
 
     static bool publish_message = false;
 
@@ -119,19 +131,19 @@ void loop() {
   }
 
   // breng gewas naar juiste bak
-  else if (*ptr_state == 5){
+  else if (*ptr_state == 6){
     sorteer_gewas(ptr_state, gewas_locatie);
   }
 
   // gripper openen - gewas laten vallen
-  else if (*ptr_state == 6){
+  else if (*ptr_state == 7){
     gripper_open(ptr_state);
     waitTime = millis();
   }
 
   // controlleer de bakken hoe ze gevuld zijn
   // process bevat geen feedback en wordt incrementeer opgeteld
-  else if (*ptr_state == 7){
+  else if (*ptr_state == 8){
     // check staat bakken
 
     if ((millis() - waitTime >= 2000)){
@@ -143,9 +155,9 @@ void loop() {
 
   // melding geven dat alle taken zijn doorgelopen
   // wellicht een melding dat de bakken vol zijn zodat ze geleegd kunnen worden
-  else if (*ptr_state == 8){
+  else if (*ptr_state == 9){
     //ROS MESSAGE KLAAR
-    nh.advertise(gewas_verwerkt_pub); 
+    gewas_verwerkt_pub.publish(&empty_msg);
   }
 
 
@@ -221,4 +233,9 @@ void check_werking_sensoren_gantry(){
     delay(100);
   }
   
+}
+
+void reset_var_and_states(){
+  *ptr_id = 0;
+  *ptr_state = 0;
 }

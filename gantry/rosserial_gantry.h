@@ -70,8 +70,8 @@ void yolov8_callback(const std_msgs::Int32& msg){
 // create ROS publisher
 ros::Publisher start_vision_gewas_locatie_pub("/start_vision", &empty_msg);
 ros::Publisher start_object_recognition_pub("/start_yolov8", &empty_msg);
-ros::Publisher gewas_verwerkt_pub("/...", &empty_msg);                        // !!!!!!!
-ros::Publisher gewas_bakken_vol_pub("/...", &empty_msg);                      // !!!!!!!
+ros::Publisher gewas_verwerkt_pub("/gantry_done", &empty_msg);                       
+ros::Publisher gewas_bakken_vol_pub("/storage_done", &empty_msg);                     
 
 
 // Create ROS subsribers

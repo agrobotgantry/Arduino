@@ -161,6 +161,40 @@ void gewasPositie(int x_afstand, int y_afstand, int* state){
   
 }
 
+bool gantry_start_plaats(int startingpoint_coordinaat){
+  static bool setNewStartingPoint = false;
+  bool done = false;
+
+  if (setNewStartingPoint == false){
+    if (startingpoint_coordinaat == 1){
+      motor_x.moveTo(myStepper_x.getY2() / 3);
+      motor_y.moveTo(0);
+    }
+    else if (startingpoint_coordinaat == 3) {
+      motor_x.moveTo(myStepper_x.getY2() / 3 * 2);
+      motor_y.moveTo(0);
+    }
+    else{
+      motor_x.moveTo(myStepper_x.getY2() / 2);
+      motor_y.moveTo(0);
+    }
+
+    setNewStartingPoint = true;
+  }
+  
+  if ( motor_x.distanceToGo() == 0 && motor_y.distanceToGo() == 0 ){
+    motor_x.stop();
+    motor_y.stop(); 
+    done = true;
+  }
+  else{
+    motor_x.run();
+    motor_y.run();
+  }
+  
+  return done;
+}
+
 void gewas_naar_camera(int* state){
   static bool readNewPostition = true;
 
