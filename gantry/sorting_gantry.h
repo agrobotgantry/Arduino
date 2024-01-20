@@ -56,10 +56,12 @@ int* gewas_bak_locatie(int* state){
       locatie[1] = 0;
   }
 
+  /*
   Serial.print("Location: ");
   Serial.print(locatie[0]);
   Serial.print(", ");
   Serial.println(locatie[1]);
+  */
 
   /*
   id++;
@@ -76,32 +78,32 @@ int* gewas_bak_locatie(int* state){
 
 void limiet_bakken(int* state){
 
+  /*
   Serial.print("Bakken: ");
   Serial.print(gewas_list[carrot]); Serial.print(", ");
   Serial.print(gewas_list[beetroot]); Serial.print(", ");
   Serial.print(gewas_list[lettuce]); Serial.print(", ");
   Serial.print(gewas_list[radish]); Serial.println(" ");
+  */
 
+
+  
   // als een bak een limiet heeft bereikt geeft het een melding
   if (gewas_list[carrot] >= max_limit_carrot){
-    Serial.println("Carrot FULL");
-    nh.advertise(gewas_bakken_vol_pub);
-
+    //Serial.println("Carrot FULL");
+    gewas_bakken_vol_pub.publish(&empty_msg);
   }
   if (gewas_list[beetroot] >= max_limit_beetroot){
-    Serial.println("beetroot FULL");
-    nh.advertise(gewas_bakken_vol_pub);
-
+    //Serial.println("beetroot FULL");
+    gewas_bakken_vol_pub.publish(&empty_msg);
   }
   if (gewas_list[lettuce] >= max_limit_lettuce){
-    Serial.println("lettuce FULL");
-    nh.advertise(gewas_bakken_vol_pub);
-
+    //Serial.println("lettuce FULL");
+    gewas_bakken_vol_pub.publish(&empty_msg);
   }
   if (gewas_list[radish] >= max_limit_radish){
-    Serial.println("radish FULL");
-    nh.advertise(gewas_bakken_vol_pub);
-
+    //Serial.println("radish FULL");
+    gewas_bakken_vol_pub.publish(&empty_msg);
   }
 
   (*state)++;

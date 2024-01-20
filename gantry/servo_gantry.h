@@ -16,18 +16,18 @@ void setup_servo() {
   
   while(state != 2){
     if (state == 0){
-      Serial.println("STATE 0");
+      //Serial.println("STATE 0");
       servo_gripper.write(180);
       state = 1;
       waitTime = millis(); 
     }
     if ((millis() - waitTime >= 1000) && state == 1){
-      Serial.println("STATE 1");
+      //Serial.println("STATE 1");
       servo_gripper.write(90);
       state = 2;
     }
   }
-  Serial.println("STATE 2");
+  //Serial.println("STATE 2");
 }
 
 // Open the gripper

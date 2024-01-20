@@ -20,6 +20,7 @@
 unsigned long waitTime = 0;
 int state = 0;
 int* ptr_state = &state;
+int newState = 0;
 int* gewas_locatie;
 bool reset_once = false;
 
@@ -28,17 +29,18 @@ bool reset_once = false;
 
 void setup() {
   Serial.begin(57600);
-
-  // while(1);
+  setup_ros_nodes();
+  nh.spinOnce();
   
+
   initializePins(); // pinout
   //setExternalInterrupt(); // kan pas als Alex het overzet
 
   setupTimer();     // setup at timer2 1ms
+  
   setup_servo();
-  setup_stepperXYZ();
-  setup_ros_nodes();
-
+  //setup_stepperXYZ();
+  
   delay(10); // small delay to be sure 
 }
 
@@ -53,24 +55,29 @@ void loop() {
   //int x_afstand = 2400;   
   //int y_afstand = -2200;
 
+  if (*ptr_state > newState){
+    int_msg.data = *ptr_state;
+    newState = *ptr_state;
+    state_pub.publish(&int_msg);
+  }
 
-  if (startingpoint){ // global in rossserial     // zorgt wss voor een loop dus moet een extra check komen wanneer zeker dat een nieuwe coordinaat is gekomen?
+
+  if ( (startingpoint != 0) && (*ptr_state == 0)){ // global in rossserial     
     // if subscribe ros aanzetten van gantry
     // startingpoint: 1,2,3 correspondeert LINKS, MIDDEN, RECHTS
 
     // reset state & id;
-    if (reset_once == false){   // zorgt voor blok >> in ergens het weer unlocken!!!!!!!!!!!!!!!!!
+    if (reset_once == false){   
       reset_var_and_states();
       reset_once = true;
     }
     
-
     // if subscribe LEFT, MIDDLE, RIGHT
     // ga naar locatie en start proces
     bool at_gantry_at_location = gantry_start_plaats(startingpoint);
     
     if (at_gantry_at_location == true){
-      ptr_state = 1;
+      *ptr_state = 1;
     }
     else {
       ptr_state = 0;
@@ -84,19 +91,41 @@ void loop() {
     if(!publish_message){
       // ros publish
       start_vision_gewas_locatie_pub.publish(&empty_msg);
-  
       publish_message = true;
     }
-    if((position_x != 0 && position_y != 0) ){ 
+
+    /*
+    if ((position_x != 0) && (position_y != 0)) {
       // ros subscribe - wachten tot de waarden up to date zijn
       *ptr_state += 1;
     }
+      else{
+      // Publish the Point message
+      point_msg.x = position_x;
+      point_msg.y = position_y;
+      point_msg.z = position_z;
+      point_pub.publish(&point_msg);
+    }
 
+    */
+    while((position_x == 0) || (position_y == 0)){
+      // Publish the Point message
+      
+      nh.spinOnce();
+    }
+    point_msg.x = position_x;
+    point_msg.y = position_y;
+    point_msg.z = position_z;
+    point_pub.publish(&point_msg);
+    *ptr_state = 2;
   }
 
   // naar gewas locatie gaan met gegeven coordinaten
   else if (*ptr_state == 2){
-    gewasPositie(position_x, position_y, ptr_state);
+    //Serial.print("X Y:"); Serial.print(position_x); Serial.println(position_y);
+    
+    gewasPositie(position_x, position_y, ptr_state);  //NIET VERGETEN UNCOMMENT
+    //*ptr_state += 1;
   }
 
   // gripper sluiten - gewas pakken
@@ -109,7 +138,8 @@ void loop() {
   // gewas brengen naar de camera voor herkenning
   else if (*ptr_state == 4){
     if ((millis() - waitTime >= 1000)){
-      gewas_naar_camera(ptr_state);    
+      gewas_naar_camera(ptr_state);       // NIET VERGETEN UNCOMMENT
+      //*ptr_state += 1;
     }
   }
 
@@ -121,18 +151,17 @@ void loop() {
     if(!publish_message){
       // ros publish
       start_object_recognition_pub.publish(&empty_msg);
-  
       publish_message = true;
     }
-    if (*ptr_id != NULL){
+    if ( (id >= 0) && (id <= 3)){
       gewas_locatie = gewas_bak_locatie(ptr_state);
     }
-
   }
 
   // breng gewas naar juiste bak
   else if (*ptr_state == 6){
-    sorteer_gewas(ptr_state, gewas_locatie);
+    sorteer_gewas(ptr_state, gewas_locatie); //NIET VERGETEN UNCOMMENT
+    //*ptr_state += 1;
   }
 
   // gripper openen - gewas laten vallen
@@ -147,7 +176,7 @@ void loop() {
     // check staat bakken
 
     if ((millis() - waitTime >= 2000)){
-      Serial.println("Check Bakken");
+      //Serial.println("Check Bakken");
       limiet_bakken(ptr_state); // check limiet, anders ROS publish
     }
 
@@ -158,8 +187,10 @@ void loop() {
   else if (*ptr_state == 9){
     //ROS MESSAGE KLAAR
     gewas_verwerkt_pub.publish(&empty_msg);
+    reset_var_and_states();
   }
 
+  //Serial.print("STATE"); Serial.println(*ptr_state);
 
   nh.spinOnce();
 }
@@ -236,6 +267,12 @@ void check_werking_sensoren_gantry(){
 }
 
 void reset_var_and_states(){
-  *ptr_id = 0;
+  id = -1;
   *ptr_state = 0;
+  newState = 0;
+  startingpoint = 0;
+  position_x = 0;
+  position_y = 0;
+  
+  // reset_once
 }

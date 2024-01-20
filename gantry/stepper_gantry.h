@@ -46,7 +46,7 @@ public:
             motor.runSpeed();
 
             if (digitalRead(Reed_voor) == trigger_voor) {
-                Serial.println("Y PRESSED 1");
+                //Serial.println("Y PRESSED 1");
                 motor.stop();
                 motor.setCurrentPosition(0);
                 pressed = 1;
@@ -60,10 +60,10 @@ public:
                 motor.runSpeed();
 
                 if (digitalRead(Reed_achter) == trigger_achter) {
-                    Serial.println("SWITCH PRESSED 2");
+                    //Serial.println("SWITCH PRESSED 2");
                     motor.stop();
                     y2 = motor.currentPosition();
-                    Serial.println(y2);
+                    //Serial.println(y2);
                     pressed = 2;
                     switchTime = millis();
                 }
@@ -83,7 +83,7 @@ public:
                 }
 
                 if (motor.distanceToGo() == 0) {
-                    Serial.println("klaar");
+                    //Serial.println("klaar");
                     init_done = true;
                 }
             }
@@ -98,9 +98,9 @@ public:
     
 };
 
-MyStepper myStepper_x(motor_x, Switch_X1_NC_links,  Switch_X2_NC_rechts, HIGH, HIGH, -700, 2400, 800);
-MyStepper myStepper_y(motor_y, Reed_Y2_achter, Reed_Y1_voor, LOW, LOW, 800, 600, 200);
-MyStepper myStepper_z(motor_z, Reed_Z1_boven,  Reed_Z2_onder, HIGH, LOW, 800, 2400, 800);
+MyStepper myStepper_x(motor_x, Switch_X1_NC_links,  Switch_X2_NC_rechts, HIGH, HIGH, -1000, 2400, 800);
+MyStepper myStepper_y(motor_y, Reed_Y2_achter, Reed_Y1_voor, LOW, LOW, 1000, 1200, 400);
+MyStepper myStepper_z(motor_z, Reed_Z1_boven,  Reed_Z2_onder, HIGH, LOW, 1000, 2400, 800);
 
 
 // call steppers XYZ to setup
@@ -120,7 +120,7 @@ void setup_stepperXYZ(){
         // Continue initialization until it's done
   }
   
-  Serial.println("Done");
+  //Serial.println("Done");
 }
 
 
@@ -129,17 +129,17 @@ void y_axis_stop(){}
 void z_axis_stop(){}
 
 
-void gewasPositie(int x_afstand, int y_afstand, int* state){
+void gewasPositie(double x_afstand, float y_afstand, int* state){
 
   static bool readNewPostition = true;
   int y_offset = 500;
 
   if (readNewPostition == true){
-    //motor_x.move(x_afstand);
-    //motor_y.move(y_afstand - y_offset);
+    motor_x.move(x_afstand);
+    motor_y.move(y_afstand - y_offset);
 
-    motor_x.moveTo(x_afstand);
-    motor_y.moveTo(y_afstand - y_offset);
+    //motor_x.moveTo(x_afstand);
+    //motor_y.moveTo(y_afstand - y_offset);
     motor_z.moveTo(myStepper_z.getY2() * 0.90);
 
     readNewPostition = false;
