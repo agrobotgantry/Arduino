@@ -27,6 +27,8 @@ bool reset_once = false;
 // Test
 int state_2 = 0;
 int gewas_locatie_2 = 0;
+bool publish_message_vision = false;
+bool publish_message_ai = false;
 
 // ====================================== SETUP ======================================
 
@@ -96,10 +98,10 @@ void loop() {
   if (state_2 == 1){
     static bool publish_message = false;
 
-    if(!publish_message){
+    if(!publish_message_vision){
       // ros publish
       start_vision_gewas_locatie_pub.publish(&empty_msg);
-      publish_message = true;
+      publish_message_vision = true;
     }
 
     /*
@@ -166,10 +168,10 @@ void loop() {
 
     static bool publish_message = false;
 
-    if(!publish_message){
+    if(!publish_message_ai){
       // ros publish
       start_object_recognition_pub.publish(&empty_msg);
-      publish_message = true;
+      publish_message_ai = true;
     }
     if ( (id >= 0) && (id <= 3)){
       gewas_locatie_2 = gewas_bak_locatie();
@@ -305,6 +307,8 @@ void reset_var_and_states(){
   //startingpoint = 0;
   position_x = 0;
   position_y = 0;
+  publish_message_vision = false;
+  publish_message_ai = false;
 
   //
   state_2 = 0;
