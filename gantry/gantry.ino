@@ -24,6 +24,10 @@ int newState = 0;
 int* gewas_locatie;
 bool reset_once = false;
 
+// Test
+int state_2 = 0;
+int gewas_locatie_2 = 0;
+
 // ====================================== SETUP ======================================
 
 
@@ -39,7 +43,7 @@ void setup() {
   setupTimer();     // setup at timer2 1ms
   
   setup_servo();
-  //setup_stepperXYZ();
+  setup_stepperXYZ();
   
   delay(10); // small delay to be sure 
 }
@@ -55,16 +59,20 @@ void loop() {
   //int x_afstand = 2400;   
   //int y_afstand = -2200;
 
+  /*
   if (*ptr_state > newState){
     int_msg.data = *ptr_state;
     newState = *ptr_state;
     state_pub.publish(&int_msg);
-  }
+  }*/
 
+  int_msg.data = state_2;
+  state_pub.publish(&int_msg);
 
-  if ( (startingpoint != 0) && (*ptr_state == 0)){ // global in rossserial     
+  if ( (startingpoint != 0) && (state_2 == 0)){ // global in rossserial     
     // if subscribe ros aanzetten van gantry
     // startingpoint: 1,2,3 correspondeert LINKS, MIDDEN, RECHTS
+
 
     // reset state & id;
     if (reset_once == false){   
@@ -77,15 +85,15 @@ void loop() {
     bool at_gantry_at_location = gantry_start_plaats(startingpoint);
     
     if (at_gantry_at_location == true){
-      *ptr_state = 1;
+      state_2 = 1;
     }
-    else {
-      ptr_state = 0;
-    }
+    /*else {
+      *ptr_state = 0;
+    }*/
   }
 
   // aanvraag gewas locatie
-  if (*ptr_state == 1){
+  if (state_2 == 1){
     static bool publish_message = false;
 
     if(!publish_message){
@@ -106,8 +114,8 @@ void loop() {
       point_msg.z = position_z;
       point_pub.publish(&point_msg);
     }
-
     */
+
     while((position_x == 0) || (position_y == 0)){
       // Publish the Point message
       
@@ -117,34 +125,44 @@ void loop() {
     point_msg.y = position_y;
     point_msg.z = position_z;
     point_pub.publish(&point_msg);
-    *ptr_state = 2;
+    //*ptr_state = 2;
+    state_2 = 2;
   }
 
   // naar gewas locatie gaan met gegeven coordinaten
-  else if (*ptr_state == 2){
+  else if (state_2 == 2){
     //Serial.print("X Y:"); Serial.print(position_x); Serial.println(position_y);
     
-    gewasPositie(position_x, position_y, ptr_state);  //NIET VERGETEN UNCOMMENT
-    //*ptr_state += 1;
+    bool gewas_positie_done = gewasPositie(position_x, position_y);  //NIET VERGETEN UNCOMMENT
+
+    if(gewas_positie_done == true) {
+      state_2 = 3;
+    }
   }
 
   // gripper sluiten - gewas pakken
-  else if (*ptr_state == 3){
-    gripper_close(ptr_state);
-    waitTime = millis(); 
+  else if (state_2 == 3){
+    gripper_close();
+    waitTime = millis();
+    state_2 = 4;
   }
 
   // wacht seconde voordat servo goed sluit
   // gewas brengen naar de camera voor herkenning
-  else if (*ptr_state == 4){
+  else if (state_2 == 4){
     if ((millis() - waitTime >= 1000)){
-      gewas_naar_camera(ptr_state);       // NIET VERGETEN UNCOMMENT
+      bool gewas_at_camera = gewas_naar_camera();       // NIET VERGETEN UNCOMMENT
       //*ptr_state += 1;
+
+      if(gewas_at_camera == true) {
+        state_2 = 5;
+      }
     }
   }
 
+  
   // aanvraag object detectie op Jetson
-  else if (*ptr_state == 5){
+  else if (state_2 == 5){
 
     static bool publish_message = false;
 
@@ -154,43 +172,57 @@ void loop() {
       publish_message = true;
     }
     if ( (id >= 0) && (id <= 3)){
-      gewas_locatie = gewas_bak_locatie(ptr_state);
+      gewas_locatie_2 = gewas_bak_locatie();
+    }
+
+    if(gewas_locatie_2 != 0){
+      state_2 = 6;
     }
   }
 
+  
   // breng gewas naar juiste bak
-  else if (*ptr_state == 6){
-    sorteer_gewas(ptr_state, gewas_locatie); //NIET VERGETEN UNCOMMENT
+  else if (state_2 == 6){
+    bool gewas_gesorteerd = sorteer_gewas(gewas_locatie_2); //NIET VERGETEN UNCOMMENT
     //*ptr_state += 1;
+    if(gewas_gesorteerd == true){
+      state_2 = 7;
+    }
   }
 
   // gripper openen - gewas laten vallen
-  else if (*ptr_state == 7){
-    gripper_open(ptr_state);
+  else if (state_2 == 7){
+    gripper_open();
     waitTime = millis();
+    state_2 = 8;
   }
 
+  
   // controlleer de bakken hoe ze gevuld zijn
   // process bevat geen feedback en wordt incrementeer opgeteld
-  else if (*ptr_state == 8){
+  else if (state_2 == 8){
     // check staat bakken
 
     if ((millis() - waitTime >= 2000)){
       //Serial.println("Check Bakken");
-      limiet_bakken(ptr_state); // check limiet, anders ROS publish
+      limiet_bakken(); // check limiet, anders ROS publish
+      state_2 = 9;
     }
 
   }
 
   // melding geven dat alle taken zijn doorgelopen
   // wellicht een melding dat de bakken vol zijn zodat ze geleegd kunnen worden
-  else if (*ptr_state == 9){
+  else if (state_2 == 9){
     //ROS MESSAGE KLAAR
     gewas_verwerkt_pub.publish(&empty_msg);
     reset_var_and_states();
+    startingpoint = 0;
+    state_2 = 0;
   }
 
   //Serial.print("STATE"); Serial.println(*ptr_state);
+  
 
   nh.spinOnce();
 }
@@ -270,9 +302,13 @@ void reset_var_and_states(){
   id = -1;
   *ptr_state = 0;
   newState = 0;
-  startingpoint = 0;
+  //startingpoint = 0;
   position_x = 0;
   position_y = 0;
+
+  //
+  state_2 = 0;
+  gewas_locatie_2 = 0;
   
   // reset_once
 }

@@ -31,15 +31,15 @@ void setup_servo() {
 }
 
 // Open the gripper
-void gripper_open(int* state) {
+void gripper_open() {
   servo_gripper.write(90);
-  *state += 1;
+  //*state += 1;
 }
 
 // Close the gripper
-void gripper_close(int* state) {
+void gripper_close() {
   servo_gripper.write(180);
-  *state += 1;
+  //*state += 1;
 }
 
 #endif

@@ -35,7 +35,10 @@ void arduino_initialise_callback() {
   //setup_stepperXYZ();
 }
 
-void start_gantry_location_callback(const std_msgs::String &msg){
+void start_gantry_location_callback(const std_msgs::Int32 &msg){
+  startingpoint = msg.data;
+  
+  /*
   String LEFT = "LEFT";
   String RIGHT = "RIGHT";
   String MIDDLE = "MIDDLE";
@@ -53,7 +56,7 @@ void start_gantry_location_callback(const std_msgs::String &msg){
   } 
   else {
    startingpoint = 0; // back up om dan altijd naar het midden te gaan
-  }
+  }*/
 
   //Serial.print("Start bij: ");  Serial.println(direction);
 }
@@ -91,7 +94,7 @@ ros::Publisher state_pub("/state_pub", &int_msg);                           // 0
 
 // Create ROS subsribers
 ros::Subscriber<std_msgs::Empty> initialise_subscriber("agrobot_gantry/initialise", &arduino_initialise_callback);      // not used
-ros::Subscriber<std_msgs::String> start_gantry_subscriber("/start_gantry", &start_gantry_location_callback);            // 1
+ros::Subscriber<std_msgs::Int32> start_gantry_subscriber("/start_gantry", &start_gantry_location_callback);            // 1
 ros::Subscriber<geometry_msgs::Point> coordinates_subscriber("/vision_coordinates", &arduino_coordinates_callback);     // 3
 ros::Subscriber<std_msgs::Int32> yolov8_subscriber("/vision_yolov8_result", &yolov8_callback);                          // 5
 

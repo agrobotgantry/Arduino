@@ -129,10 +129,11 @@ void y_axis_stop(){}
 void z_axis_stop(){}
 
 
-void gewasPositie(double x_afstand, float y_afstand, int* state){
+bool gewasPositie(double x_afstand, float y_afstand){
 
   static bool readNewPostition = true;
   int y_offset = 500;
+  bool done = false;
 
   if (readNewPostition == true){
     motor_x.move(x_afstand);
@@ -154,11 +155,11 @@ void gewasPositie(double x_afstand, float y_afstand, int* state){
   }
 
  if( (motor_x.distanceToGo() == 0) && (motor_y.distanceToGo() == 0) && motor_z.distanceToGo() == 0 ){
-    *state += 1;
+    done = true;
     readNewPostition = true;
  }
  
-  
+  return done;
 }
 
 bool gantry_start_plaats(int startingpoint_coordinaat){
@@ -191,13 +192,15 @@ bool gantry_start_plaats(int startingpoint_coordinaat){
     motor_x.run();
     motor_y.run();
   }
-  
+
+  setNewStartingPoint = false;
   return done;
 }
 
-void gewas_naar_camera(int* state){
+bool gewas_naar_camera(){
   static bool readNewPostition = true;
-
+  bool done = false;
+  
   if (readNewPostition == true){
     motor_z.moveTo(myStepper_z.getY2() * 0.10);
 
@@ -214,20 +217,22 @@ void gewas_naar_camera(int* state){
     motor_y.run();
   }
   if ((motor_z.distanceToGo() == 0) && ((motor_x.distanceToGo() == 0) && (motor_y.distanceToGo() == 0)) ) {
-    *state += 1;
+    done = true;
     readNewPostition = true;
   }
 
+  return done;
 }
 
 
-void sorteer_gewas(int* state, int* gewas_locatie) {
+bool sorteer_gewas(int gewas_locatie) {
 
   static bool readNewPostition = true;
+  bool done = false;
 
   if (readNewPostition == true){
-    motor_x.moveTo(gewas_locatie[0]);
-    motor_y.moveTo(gewas_locatie[1]);
+    motor_x.moveTo(gewas_locatie);
+    motor_y.moveTo(0);
     readNewPostition = false;
   }
   else{
@@ -236,9 +241,12 @@ void sorteer_gewas(int* state, int* gewas_locatie) {
   }
 
   if ( motor_x.distanceToGo() == 0 && motor_y.distanceToGo() == 0 ){
-    *state += 1;
+    //*state += 1;
+    done = true;
     readNewPostition = true;
   }
+  
+  return done;
 }
 
 

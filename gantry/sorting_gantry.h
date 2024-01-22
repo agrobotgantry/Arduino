@@ -23,36 +23,37 @@ const int max_limit_radish = 5;
 
 
 
-int* gewas_bak_locatie(int* state){
+int gewas_bak_locatie(){
   
   //static int id = 0;
   static int locatie[2] = {0, 0};
+  int locatie_x = 0;
   
 
   if (id == carrot){
       //locatie[0] = bak1_locatie[0];
-      locatie[0] = (myStepper_x.getY2() * 0.19);
+      locatie_x = (myStepper_x.getY2() * 0.19);
       locatie[1] = 0;
       gewas_list[carrot] += 1;
   }
   else if (id == beetroot){
-      locatie[0] = (myStepper_x.getY2() * 0.45);
+      locatie_x = (myStepper_x.getY2() * 0.45);
       locatie[1] = 0;
       gewas_list[beetroot] += 1;
   }
   else if (id == lettuce){
-      locatie[0] = (myStepper_x.getY2() * 0.71);
+      locatie_x = (myStepper_x.getY2() * 0.71);
       locatie[1] = 0;
       gewas_list[lettuce] += 1;
   }
   else if (id == radish) {
-      locatie[0] = (myStepper_x.getY2() * 0.95);
+      locatie_x = (myStepper_x.getY2() * 0.95);
       locatie[1] = 0;
       gewas_list[radish] += 1;
   }
   else{
       // Handle the case when the ID is not recognized
-      locatie[0] = 0;
+      locatie_x = 0;
       locatie[1] = 0;
   }
 
@@ -71,12 +72,12 @@ int* gewas_bak_locatie(int* state){
   }
   */
 
-  (*state)++;
-  return locatie;
+  //(*state)++;
+  return locatie_x;
 }
 
 
-void limiet_bakken(int* state){
+void limiet_bakken(){
 
   /*
   Serial.print("Bakken: ");
@@ -85,8 +86,6 @@ void limiet_bakken(int* state){
   Serial.print(gewas_list[lettuce]); Serial.print(", ");
   Serial.print(gewas_list[radish]); Serial.println(" ");
   */
-
-
   
   // als een bak een limiet heeft bereikt geeft het een melding
   if (gewas_list[carrot] >= max_limit_carrot){
@@ -106,7 +105,7 @@ void limiet_bakken(int* state){
     gewas_bakken_vol_pub.publish(&empty_msg);
   }
 
-  (*state)++;
+  //(*state)++;
 }
 
 
