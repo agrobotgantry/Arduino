@@ -36,7 +36,7 @@ const int Reed_Y2_achter = 38;
 
 // Pins reed switches z-as
 const int Reed_Z1_boven = 35;
-const int Reed_Z2_onder = 14;
+const int Reed_Z2_onder = 4; // 14
 
 void initializePins() {
   // pinmode micro switches
