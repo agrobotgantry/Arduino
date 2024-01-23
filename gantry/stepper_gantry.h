@@ -99,7 +99,7 @@ public:
 };
 
 MyStepper myStepper_x(motor_x, Switch_X1_NC_links,  Switch_X2_NC_rechts, HIGH, HIGH, -1000, 2400, 800);
-MyStepper myStepper_y(motor_y, Reed_Y2_achter, Reed_Y1_voor, LOW, LOW, 1000, 1200, 400);
+MyStepper myStepper_y(motor_y, Reed_Y2_achter, Reed_Y1_voor, LOW, LOW, 1000, 1200, 600);
 MyStepper myStepper_z(motor_z, Reed_Z1_boven,  Reed_Z2_onder, HIGH, LOW, 1000, 2400, 800);
 
 
@@ -141,7 +141,7 @@ bool gewasPositie(double x_afstand, float y_afstand){
 
     //motor_x.moveTo(x_afstand);
     //motor_y.moveTo(y_afstand - y_offset);
-    motor_z.moveTo(myStepper_z.getY2() * 0.90);
+    motor_z.moveTo(myStepper_z.getY2());
 
     readNewPostition = false;
   }
@@ -168,29 +168,34 @@ bool gantry_start_plaats(int startingpoint_coordinaat){
 
   if (setNewStartingPoint == false){
     if (startingpoint_coordinaat == 1){
-      motor_x.moveTo(myStepper_x.getY2() / 3);
+      motor_x.moveTo(myStepper_x.getY2() * 0.25);
       motor_y.moveTo(0);
+      motor_z.moveTo(myStepper_z.getY2() / 4);
     }
     else if (startingpoint_coordinaat == 3) {
-      motor_x.moveTo(myStepper_x.getY2() / 3 * 2);
+      motor_x.moveTo(myStepper_x.getY2() * 0.75);
       motor_y.moveTo(0);
+      motor_z.moveTo(myStepper_z.getY2() / 4);
     }
     else{
-      motor_x.moveTo(myStepper_x.getY2() / 2);
+      motor_x.moveTo(myStepper_x.getY2() / 2 + 920);
       motor_y.moveTo(0);
+      motor_z.moveTo(myStepper_z.getY2() / 4);
     }
 
     setNewStartingPoint = true;
   }
   
-  if ( motor_x.distanceToGo() == 0 && motor_y.distanceToGo() == 0 ){
+  if ( motor_x.distanceToGo() == 0 && motor_y.distanceToGo() == 0 && motor_z.distanceToGo() == 0){
     motor_x.stop();
     motor_y.stop(); 
+    motor_z.stop();
     done = true;
   }
   else{
     motor_x.run();
     motor_y.run();
+    motor_z.run();
   }
 
   setNewStartingPoint = false;

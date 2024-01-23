@@ -15,9 +15,9 @@ const int lettuce = 2;
 const int radish = 3;
 
 const int max_limit_carrot = 6;
-const int max_limit_beetroot = 3;
-const int max_limit_lettuce = 4;
-const int max_limit_radish = 5;
+const int max_limit_beetroot = 6; //3
+const int max_limit_lettuce = 6;  //4
+const int max_limit_radish = 6;   //5
 
 // int id = 0;
 
