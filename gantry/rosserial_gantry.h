@@ -63,8 +63,8 @@ void start_gantry_location_callback(const std_msgs::Int32 &msg){
 
 // Subscriber callback coordinates
 void arduino_coordinates_callback(const geometry_msgs::Point &point_msg) {
-  const float x_step_per_pixel_multiply = 14.5; // van script 
-  const float y_step_per_pixel_multiply = 3.1; // van script
+  const float x_step_per_pixel_multiply = 14.5; // van script 14.5 29.2
+  const float y_step_per_pixel_multiply = 6.4; // van script 3.1 6.4
 
   //double temp_position_x = double(msg.x);
   double temp_position_x = point_msg.x;

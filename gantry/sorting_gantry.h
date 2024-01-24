@@ -14,10 +14,10 @@ const int beetroot = 1;
 const int lettuce = 2;
 const int radish = 3;
 
-const int max_limit_carrot = 6;
-const int max_limit_beetroot = 6; //3
-const int max_limit_lettuce = 6;  //4
-const int max_limit_radish = 6;   //5
+const int max_limit_carrot = 5;
+const int max_limit_beetroot = 5; //3
+const int max_limit_lettuce = 4;  //4
+const int max_limit_radish = 4;   //5
 
 // int id = 0;
 
@@ -86,7 +86,8 @@ void limiet_bakken(){
   Serial.print(gewas_list[lettuce]); Serial.print(", ");
   Serial.print(gewas_list[radish]); Serial.println(" ");
   */
-  
+
+  /*
   // als een bak een limiet heeft bereikt geeft het een melding
   if (gewas_list[carrot] >= max_limit_carrot){
     //Serial.println("Carrot FULL");
@@ -98,10 +99,14 @@ void limiet_bakken(){
   }
   if (gewas_list[lettuce] >= max_limit_lettuce){
     //Serial.println("lettuce FULL");
-    gewas_bakken_vol_pub.publish(&empty_msg);
   }
   if (gewas_list[radish] >= max_limit_radish){
     //Serial.println("radish FULL");
+    gewas_bakken_vol_pub.publish(&empty_msg);
+  }
+  */
+
+  if (gewas_list[carrot] >= max_limit_carrot && gewas_list[beetroot] >= max_limit_beetroot && gewas_list[lettuce] >= max_limit_lettuce && gewas_list[radish] >= max_limit_radish){
     gewas_bakken_vol_pub.publish(&empty_msg);
   }
 

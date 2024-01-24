@@ -29,6 +29,7 @@ int state_2 = 0;
 int gewas_locatie_2 = 0;
 bool publish_message_vision = false;
 bool publish_message_ai = false;
+int id_count = 0;
 
 // ====================================== SETUP ======================================
 
@@ -168,11 +169,31 @@ void loop() {
 
     static bool publish_message = false;
 
+    /*
     if(!publish_message_ai){
       // ros publish
       start_object_recognition_pub.publish(&empty_msg);
       publish_message_ai = true;
     }
+    */
+
+    //
+    id_count++;
+    if(id_count == 25){
+      id_count = 1;
+    }
+
+    //
+    if(id_count < 7){
+      id = 0;
+    } else if(id_count < 13){
+      id = 1;
+    } else if(id_count < 19){
+      id = 2;
+    } else if(id_count < 25){
+      id = 3;
+    }
+    
     if ( (id >= 0) && (id <= 3)){
       gewas_locatie_2 = gewas_bak_locatie();
     }

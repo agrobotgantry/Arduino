@@ -98,9 +98,9 @@ public:
     
 };
 
-MyStepper myStepper_x(motor_x, Switch_X1_NC_links,  Switch_X2_NC_rechts, HIGH, HIGH, -1000, 2400, 800);
-MyStepper myStepper_y(motor_y, Reed_Y2_achter, Reed_Y1_voor, LOW, LOW, 1000, 1200, 600);
-MyStepper myStepper_z(motor_z, Reed_Z1_boven,  Reed_Z2_onder, HIGH, LOW, 1000, 2400, 800);
+MyStepper myStepper_x(motor_x, Switch_X1_NC_links,  Switch_X2_NC_rechts, HIGH, HIGH, -1200, 3200, 800);
+MyStepper myStepper_y(motor_y, Reed_Y2_achter, Reed_Y1_voor, LOW, LOW, 1000, 1800, 400);
+MyStepper myStepper_z(motor_z, Reed_Z1_boven,  Reed_Z2_onder, HIGH, LOW, 1000, 3200, 800);
 
 
 // call steppers XYZ to setup

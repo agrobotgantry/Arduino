@@ -17,13 +17,13 @@ void setup_servo() {
   while(state != 2){
     if (state == 0){
       //Serial.println("STATE 0");
-      servo_gripper.write(180);
+      servo_gripper.write(165);
       state = 1;
       waitTime = millis(); 
     }
     if ((millis() - waitTime >= 1000) && state == 1){
       //Serial.println("STATE 1");
-      servo_gripper.write(90);
+      servo_gripper.write(80);
       state = 2;
     }
   }
@@ -32,13 +32,13 @@ void setup_servo() {
 
 // Open the gripper
 void gripper_open() {
-  servo_gripper.write(90);
+  servo_gripper.write(80);
   //*state += 1;
 }
 
 // Close the gripper
 void gripper_close() {
-  servo_gripper.write(180);
+  servo_gripper.write(165);
   //*state += 1;
 }
 
